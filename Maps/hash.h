@@ -3,9 +3,11 @@
 #include<cstring>
 #include<sstream>
 #include "RBT.h"
+#include "map.h"
 
 typedef long long int ll ;
 const ll MIN = -1e18 ;
+
 
 ll hashValue(std:: string s) {
     const ll p = 31;
@@ -44,7 +46,7 @@ std::string to_string(const std::string& obj) {
 
 
 template<typename T,typename K>
-class HashMap{
+class HashMap :public Map<T,K> {
     
     RBT<T,K> *__hashTable ;
     ll n ;
@@ -52,16 +54,21 @@ public:
     HashMap(ll n = 10) {
         this->n  = n ;
         __hashTable = new RBT<T,K>[n] ;
-        for(ll i = 0 ; i < n ; i++) __hashTable[i] = RBT<T,K>() ;
+        // for(ll i = 0 ; i < n ; i++) __hashTable[i] ;
     }
 
     void insert(T key, K value) {
         ll hash = (hashValue(to_string(key)) + n)  % n ;
-        std::cout << "Hash Value : " << hash << std::endl ;
-        if(__hashTable[hash].find(key)) {
-            __hashTable[hash].remove(key) ;
+        // std::cout << "Hash Value : " << hash << std::endl ;
+        // if(__hashTable[hash].find(key)) {
+        //     __hashTable[hash].remove(key) ;
+        // }
+        node<T,K>* temp = __hashTable[hash].find(key) ;
+        if(temp) {
+            temp->value = value ;
+        } else {
+            __hashTable[hash].insert(key,value) ;
         }
-        __hashTable[hash].insert(key,value) ;
     }
 
     void remove(T key) {
@@ -72,7 +79,7 @@ public:
     bool search(T key) {
         // return ((searchNode(s) != nullptr) ? true : false) ;
         ll hash = (hashValue(to_string(key)) + n)  % n ;
-        return __hashTable[hash].find(key) ;
+        return __hashTable[hash].find(key) ? true : false ;
     }
 
     void clear(){
@@ -82,39 +89,39 @@ public:
     }
     K& get(T key) {
         ll hash = (hashValue(to_string(key)) + n)  % n ;
-        return __hashTable[hash].find_helper(key)->value ;
+        return __hashTable[hash].find(key)->value ;
+    }
+    
+    void print() {
+        for(ll i = 0 ; i < n ; i++) {
+            std::cout << "Bucket " << i << '\n' ;
+            __hashTable[i].print() ;
+            std::cout << std::endl ;
+        }
     }
 
-    // i want to use [T]++ , [T]-- , overload
     K& operator [](T key) {
         return get(key) ;
     }  
 
-    void print() {
-        for(ll i = 0 ; i < n ; i++) {
-            std::cout << "Bucket " << i << '\n' ;
-            __hashTable[i].print(__hashTable[i].getRoot()) ;
-            std::cout << std::endl ;
+
+    template<typename U = K>
+    typename std::enable_if<std::is_arithmetic<U>::value, void>::type
+    operator++(T key) {
+        node<T,K>* temp = __hashTable[hashValue(to_string(key))].find(key) ;
+        if(temp) {
+            temp->value++ ;
         }
     }
 
     template<typename U = K>
     typename std::enable_if<std::is_arithmetic<U>::value, void>::type
-    operator++(T key) {
-        insert(key, get(key) + 1);
-    }
-
-    template<typename U = K>
-    typename std::enable_if<std::is_arithmetic<U>::value, void>::type
     operator--(T key) {
-        insert(key, get(key) - 1);
+        node<T,K>* temp = __hashTable[hashValue(to_string(key))].find(key) ;
+        if(temp) {
+            temp->value-- ;
+        }
     }
-    RBT<T,K> begin() {
-        return __hashTable[0] ;
-    }
-    RBT<T,K> end() {
-        return __hashTable[n-1] ;
-    } 
 
 
 

@@ -1,30 +1,17 @@
 #include<iostream>
 #include<vector>
 #include<cstring>
+#include "node.h"
 
 using namespace std ;
-template <typename T,typename K>
-struct node {
-    node<T,K>* left ;
-    node<T,K>* right ;
-    node<T,K>* parent ;
-    T key ;
-    K value ;
-    int color ;
-    int nodes_count ;
+//ordered_map implementation using Red Black Tree
 
-    node() {
-        left = right = parent = NULL ;
-        nodes_count = 0 ;
-    }
-    node(T key,K value) {
-        this->key = key ;
-        this->value = value ;
-        left = right = parent = NULL ;
-        nodes_count = 0 ;
-    }
-
-} ;
+/**
+ * @brief Red Black Tree
+ * 
+ * @tparam T 
+ * @tparam K 
+ */
 
 template <typename T,typename K>
 class RBT{
@@ -37,6 +24,7 @@ class RBT{
         if(x == NULL || x == NIL) return 0 ;
         else return x->color ;
     }
+
 
     void left_rotate(node<T,K>* x) {
         node<T,K>* y = x->right ;
@@ -122,19 +110,27 @@ class RBT{
 
     }
 
-    node<T,K>* insert_helper(T key,K value) {
+    node<T,K>* insert_helper(T key,K value,int change = 0) {
         node<T,K>* y = NIL ;
         node<T,K>* x = root ;
-        if(find(key) == true) return NULL ;
+        node<T,K>* finding  = find(key) ;
+        // if(finding) {
+        //     if(change) {
+        //         finding->value = value ;
+        //     }
+        //     return NULL ;
+        // }
         node<T,K>* z = new node<T,K>(key,value) ;
         z->right = z->left = NIL ;
         while(x != NIL) {
             y = x ;
             x->nodes_count++ ;
             if(z->key < x->key) {
+                // std::cout << z->key << " is less than " << x->key << std::endl ;
                 x = x->left ;
             }
             else if (z->key > x->key) {
+                // std::cout << z->key << " is greater than " << x->key << std::endl ;
                 x = x->right ;
             }
         }
@@ -146,6 +142,7 @@ class RBT{
             root = z ;
         }
         else if(z->key < y->key) {
+            // std::cout << z->key << " is less than " << y->key << std::endl ;
             y->left = z ;
         }
         else y->right = z ;
@@ -165,7 +162,7 @@ class RBT{
     }
 
     bool delete_helper(T key) {
-        node<T,K>* z = find_helper(key) ;
+        node<T,K>* z = find(key) ;
         node<T,K>* y = z ;
         node<T,K>* x = NIL ;
         if(z == NULL) {
@@ -282,6 +279,24 @@ class RBT{
         delete _root ;
     }
 
+    void print_helper(node<T, K>* root, std::string indent, bool last) {
+        if (root != NIL) {
+            std::cout << indent;
+            if (last) {
+                std::cout << "R----";
+                indent += "   ";
+            } else {
+                std::cout << "L----";
+                indent += "|  ";
+            }
+
+            std::string sColor = root->color ? "RED" : "BLACK";
+            std::cout <<"["<< root->key << "," << root->value << "](" << sColor << ")" << std::endl;
+            print_helper(root->left, indent, false);
+            print_helper(root->right, indent, true);
+        }
+    }
+
 
 public :
     RBT() {
@@ -293,8 +308,8 @@ public :
 
     bool insert(T key,K value) {
         node<T,K>* nod = insert_helper(key,value) ;
-        if(nod != NULL) return true ;
-        else return false ;
+        // if(nod) std::cout << "Inserted : " << nod->key << std::endl ;
+        return nod ? true : false ;
     }
     bool remove(T key) {
         return delete_helper(key) ;
@@ -314,7 +329,7 @@ public :
         preorder(temp->right);
     }
     
-    node<T,K>* find_helper(T key) {
+    node<T,K>* find(T key) {
         node<T,K>* temp = root ;
         while (true)
         {
@@ -325,9 +340,8 @@ public :
         }
 
     }
-    bool find(T key) {
-        return (find_helper(key) != NULL ? true : false) ;
-    }
+
+
 
     int less(T key){
         node<T,K>* temp = root ;
@@ -360,22 +374,52 @@ public :
         return cnt ;
     }
 
-    //getroot
-    node<T,K>* getRoot() {
+    // getroot
+    node<T,K>* begin() {
         return root ;
     }
+
+    node<T,K>* end() {
+        return NIL ;
+    }
+
+    typename node<T, K>::iterator begini() {
+        return typename node<T, K>::iterator(root);  // Start iterator should point to root
+    }
+
+    typename node<T, K>::iterator endi() {
+        return typename node<T, K>::iterator(NIL);  // End iterator should point to null
+    }
+
+
+
 
     void clear() {
         removeSubTree(root) ;
         root = NIL ;
     }
 
-    void print(node<T,K>* temp,std::string space="",std::string type ="root") {
-        if(temp == NIL) return ;
-        std::cout << space << temp->key << "," << temp->value << " {" << type << "}" <<std::endl ;
-        space+=" " ;
-        print(temp->left,space,"left") ;
-        print(temp->right,space,"right") ;
+    int get_order(T key) {
+        node<T,K>* temp = root ;
+        int cnt = 0 ;
+        while (true)
+        {
+            if (temp == NIL) return -1 ;
+            if(key < temp->key)   temp = temp->left ;
+            else if(key > temp->key)  {
+                cnt+=temp->left->nodes_count + 1 ;
+                temp = temp->right ;
+            }
+            else return cnt + temp->left->nodes_count ;
+        }
+    }
+
+    //go to left ,right operator++ overloDING
+
+    
+
+    void print() {
+        print_helper(root, "", true);
     }
 
     ~RBT() {
@@ -383,3 +427,4 @@ public :
         delete NIL ;
     }
 } ;
+
