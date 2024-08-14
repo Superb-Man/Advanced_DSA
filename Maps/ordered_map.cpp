@@ -4,12 +4,15 @@
 int main() {
     ordered_map<std::string, int> h;
     RBT<std::string,int> rbt ;
+    RBT<int,int> rbt2 ;
     
     for(int i = 0 ; i < 20 ; i++) {
         h.insert("abc"+to_string(i),i) ;
         rbt.insert("abc"+to_string(i),i) ;
+        rbt2.insert(i,i) ;
     }
-    rbt.print() ;
+    std::cout  << "Order of the key " << rbt2.get_order(5) << '\n' ;
+
     h.insert("abc0",76) ;
 
     std::cout << h["abc1"] <<'\n' ;

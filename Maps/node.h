@@ -1,4 +1,7 @@
 #include<stack>
+#define RIGHT 1
+#define LEFT 0
+
 template <typename T,typename K>
 struct node {
     node<T,K>* left ;
@@ -7,7 +10,7 @@ struct node {
     T key ;
     K value ;
     int color ;
-    int nodes_count ;
+    int nodes_count ; // number of nodes in the subtree rooted at this node
 
     node() {
         left = right = parent = NULL ;
